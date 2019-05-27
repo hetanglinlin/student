@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>学生信息</title>
+    <style>
+        #result td {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <a href="/info/coursepage/">查看课程</a>
+    {% verbatim %}
+    <div id="result">
+        <select v-model="collegeId" @change="search()">
+            <option value="" selected>全部学院</option>
+            <option v-for="college in colleges" :value="college.collid">{{ college.collname }}</option>
+        </select>&nbsp&nbsp&nbsp&nbsp
+        <input v-model="searchName" @keydown.enter="search()" type="text" size="30" placeholder="请输入学生姓名查询">&nbsp&nbsp&nbsp&nbsp
+        <input v-model="searchId" @keydown.enter="search()" type="text" size="30" placeholder="请输入学生学号查询">
+
+        <button @click="search()">查询</button>
+        <hr>
+        <table>
+            <tr>
+                <th width="100">学号</th>
+                <th width="100">姓名</th>
+                <th width="150">性别</th>
+                <th width="180">出生日期</th>
+                <th width="180">户籍所在地</th>
+                <th width="180">所属学院</th>
+                <th width="180">删除</th>
+            </tr>
+            <tr v-for="student in students">
+                <td>{{ student.stuid }}</td>
+                <td>{{ student.stuname }}</td>
+                <td>
+                    <span v-if="student.stusex">男</span>
+                    <span v-else>女</span>
+                </td>
+                <td>{{ student.stubirth }}</td>
+                <td>{{ student.stuaddr }}</td>
+                <td>{{ student.college.collname }}</td>
+                <td>
+                    <button @click="deleteBtn(student)">删除</button>
+                </td>
+            </tr>
+        </table>
+        <div>
+            <button @click="firstPage()">首页</button>&nbsp;&nbsp;
+            <button @click="prevPage()">上一页</button>&nbsp;&nbsp;
+            第{{ currentPage }}页/共{{ totalPage }}页&nbsp;&nbsp;
+            <button @click="nextPage()">下一页</button>&nbsp;&nbsp;
+            <button @click="lastPage()">末页</button>
+        </div>
+    </div>
+    {% endverbatim %}
+    <script src="https://cdn.bootcss.com/vue/2.6.10/vue.min.js"></script>
+    <script>
+        const app = new Vue({
+            el:'#result',
+            data:{
+                selected:'',
+                students:[],
+                currentPage:1,
+                totalPage:0,
+                searchName:'',
+                searchId:'',
+                colleges:[],
+                collegeId:'',
+            },
+            created(){
+                this.getStudents()
+                fetch('api/colleges/',{})
+                    .then(resp => resp.json())
+                    .then(json => this.colleges = json)
+            },
+            methods:{
+                deleteBtn(student){
+                    let url = `api/students/${student.stuid}/`
+                    fetch(url,{method:'DELETE'})
+                        .then(resp => resp.status)
+                        .then(status => {
+                            if (status==204){
+                                let index=this.students.indexOf(student)
+                                this.students.splice(index,1)
+                            }
+                        })
+                },
+                getStudents(){
+                    let url=`/api/students/?page=${this.currentPage}&stuname=${this.searchName}&stuid=${this.searchId}&college=${this.collegeId}`
+                    fetch(url,{})
+                        .then(resp => resp.json())
+                        .then(json => {
+                            this.students = json.results
+                            this.totalPage=parseInt((json.count-1)/5)+1
+                        })
+                },
+                search(){
+                    this.currentPage = 1
+                    this.getStudents()
+                },
+                firstPage(){
+                    this.currentPage=1
+                    this.getStudents()
+                },
+                lastPage(){
+                    this.currentPage=this.totalPage
+                        this.getStudents()
+                },
+                nextPage(){
+                    if (this.currentPage<this.totalPage){
+                        this.currentPage += 1
+                        this.getStudents()
+                    }
+                },
+                prevPage(){
+                    if (this.currentPage>1){
+                        this.currentPage -= 1
+                        this.getStudents()
+                    }
+                }
+            },
+
+        })
+
+
+    </script>

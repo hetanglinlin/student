@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>课程信息</title>
+    <style>
+        #courseResult td {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<a href="/">查看学生</a>
+{% verbatim %}
+    <div id="courseResult">
+        <table>
+            <tr>
+                <th width="200">学课名称</th>
+                <th width="200">课程详情</th>
+                <th width="180">删除</th>
+            </tr>
+            <tr v-for="course in courses">
+                <td>{{ course.couname }}</td>
+                <td>
+                    <button @click="detailBtn(course)">查看详情</button>
+                </td>
+            <td>
+                <button @click="deleteBtn(course)">删除</button>
+            </td>
+            </tr>
+        </table>
+        <hr>
+        <table>
+            <tr>
+                <th width="180">课程编号</th>
+                <th width="180">课程名称</th>
+                <th width="180">课程学分</th>
+                <th width="180">授课老师</th>
+                <th width="180">学生数量</th>
+            </tr>
+            <tr v-for="couinfo in couinfos">
+                <td>{{ couinfo.couid }}</td>
+                <td>{{ couinfo.couname }}</td>
+                <td>{{ couinfo.coucredit }}</td>
+                <td>{{ couinfo.teacher}}</td>
+                <td></td>
+            </tr>
+
+        </table>
+    </div>
+    {% endverbatim %}
+    <script src="https://cdn.bootcss.com/vue/2.6.10/vue.min.js"></script>
+    <script>
+        const app2 = new Vue({
+            el:'#courseResult',
+            data:{
+                courses:[],
+                couinfos:{
+                    couid:'',
+                    couname:'',
+                    coucredit:'',
+                    teacher:{},
+                    students:[],
+                },
+            },
+            created(){
+                let url = `/api/courses/`
+                fetch(url,{})
+                    .then(resp => resp.json())
+                    .then(json => this.courses = json)
+            },
+            methods:{
+                deleteBtn(course){
+                    let url = `/api/courses/${course.couid}/`
+                    fetch(url,{method:'DELETE'})
+                        .then(resp => resp.status)
+                        .then(status => {
+                            if (status==204){
+                                let index=this.courses.indexOf(course)
+                                this.courses.splice(index,1)
+                            }
+                        })
+                },
+                detailBtn(course){
+                    let url = '/api/courses/' + course.couid
+                    fetch(url,{})
+                        .then(resp => resp.json())
+                        .then(json => this.couinfos = json)
+                },
+            },
+        })
+
+    </script>
+</body>
+</html>
