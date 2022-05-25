@@ -15,7 +15,7 @@ idna==2.8
 itsdangerous==1.1.0
 kombu==4.5.0
 Pillow==6.0.0
-PyJWT==1.7.1
+PyJWT==2.4.0
 PyMySQL==0.9.3
 pytz==2019.1
 qiniu==7.2.4
